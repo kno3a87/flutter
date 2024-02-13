@@ -1600,6 +1600,7 @@ class Scaffold extends StatefulWidget {
     this.onDrawerChanged,
     this.endDrawer,
     this.onEndDrawerChanged,
+    this.onStatusBarTap,
     this.bottomNavigationBar,
     this.bottomSheet,
     this.backgroundColor,
@@ -1751,6 +1752,11 @@ class Scaffold extends StatefulWidget {
 
   /// Optional callback that is called when the [Scaffold.endDrawer] is opened or closed.
   final DrawerCallback? onEndDrawerChanged;
+
+  /// Optional callback that is called when the Scaffold's status bar is tapped.
+  ///
+  /// This callback is only called in iOS and macOS applications.
+  final void Function()? onStatusBarTap;
 
   /// The color to use for the scrim that obscures primary content while a drawer is open.
   ///
@@ -2556,7 +2562,9 @@ class ScaffoldState extends State<Scaffold> with TickerProviderStateMixin, Resto
   // top. We implement this by looking up the primary scroll controller and
   // scrolling it to the top when tapped.
   void _handleStatusBarTap() {
-    final ScrollController? primaryScrollController = PrimaryScrollController.maybeOf(context);
+    // 下記あってもなくても良さそうだけど一応そのまま
+    final ScrollController? primaryScrollController =
+        PrimaryScrollController.maybeOf(context);
     if (primaryScrollController != null && primaryScrollController.hasClients) {
       primaryScrollController.animateTo(
         0.0,
@@ -2564,6 +2572,7 @@ class ScaffoldState extends State<Scaffold> with TickerProviderStateMixin, Resto
         curve: Curves.easeOutCirc,
       );
     }
+    widget.onStatusBarTap?.call();
   }
 
   // INTERNALS
@@ -2945,6 +2954,20 @@ class ScaffoldState extends State<Scaffold> with TickerProviderStateMixin, Resto
 
     switch (themeData.platform) {
       case TargetPlatform.iOS:
+        _addIfNonNull(
+          children,
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _handleStatusBarTap,
+            // iOS accessibility automatically adds scroll-to-top to the clock in the status bar
+            excludeFromSemantics: true,
+          ),
+          _ScaffoldSlot.statusBar,
+          removeLeftPadding: false,
+          removeTopPadding: true,
+          removeRightPadding: false,
+          removeBottomPadding: true,
+        );
       case TargetPlatform.macOS:
         _addIfNonNull(
           children,

@@ -15,7 +15,7 @@ import 'cache.dart';
 import 'convert.dart';
 import 'globals.dart' as globals;
 
-const String _unknownFrameworkVersion = '0.0.0-unknown';
+const String _unknownFrameworkVersion = '3.16.9';
 
 /// A git shortcut for the branch that is being tracked by the current one.
 ///
